@@ -1,0 +1,95 @@
+from data_types import *
+
+# This file defines data sources and set up the model.
+# Modify it by follow the instructions below.
+#
+# Syntaxis of this config file is that of Python language
+
+
+#-- Data ---------------------------------------------------------------
+
+# Set up catchments by specifying a DEM file and catchment name. This file
+# should be in a projected coordinate system (e.g. UTM) and in meters. Any
+# raster format recognized by GDAL (GeoTIFF, ArcGRID, etc.) should work.
+kg = Catchment(dem = "../dem_KG.tif", name='KG')
+sj = Catchment(dem = "../dem_SJ.tif", name='SJ')
+
+# Set up detrital data by specifying age file, sample name, catchment
+# (defined above), and the thermochronometer type. Ages should be in
+# millions of years. The thermochronometer type can be either AFT or AHe.
+# Set use=False id you only want to see goodness of fit od the data,
+# but not actually use the sample in model fitting.
+sample_1 = DetritalSample(age_file = "../det_KG.txt", 
+                        sample_name = 'KG_dt',use=True,
+                        catchment = kg, tc_type = 'AHe', usecols=[0])
+sample_2 = DetritalSample(age_file = "../det_SJ.txt", 
+                        sample_name = 'SJ_dt',use=True,
+                        catchment = sj, tc_type = 'AHe', usecols=[0])
+
+
+# In addition to detrital samples you can provide bedrock samples. 
+# Specify bedrock file, sample name, and the 
+# thermochronometer type. To run without bedrock data add no 
+# additional sample here.
+# 
+# Optionally, provide ref_z (elevation from which to compute hc,
+# such as mean surface elevation. By default it is taken as average
+# of highes and lowest bedrock sample elevations
+sample_3 = BedrockSample(br_file = "../br_he.txt",
+                         sample_name = 'Sierra_br', tc_type = 'AHe',
+                         ref_z=kings.center[2])
+
+
+
+
+#-- Model setup --------------------------------------------------------
+
+model_name = "Beatrix"
+
+# Enter an integer representing the number of breaks in the exhumation model.
+breaks = 1
+
+# Enter a range for the following priors.
+erate_prior = (0, 1)
+abr_prior = (0, 40)
+error_prior = (0.1, 0.15) # This is relative (to age) error.
+
+# Set to None unless want to model tilt (Sierra)
+# Tilt axis azimuth and angle prior, in degrees.
+# Range should probably be small, so we don't have to deal with circular stats.
+axis_prior = None  # strike of the rotation axus
+tilt_prior = None   # tilt angle (from past to present, corkscrew rule)
+rot_center = kings.center # pivot point (x,y,z)
+
+#-- Sampler setup ------------------------------------------------------
+
+# Enter the desired amount of iterations for the MCMC algorithm.
+iterations = 50000
+
+# Enter the desired size of the resulting chain.
+finalChainSize = 1000
+
+#-- Output -------------------------------------------------------------
+
+# Enter the desired output format for plots/figures.
+# Example: "pdf", "png", "jpeg", etc.
+
+output_format = "png"
+
+
+#-- End of config ------------------------------------------------------
+
+
+
+# TODO: put the following into a separate file
+
+#-----------------------------------------------------------------------
+#---------------------- DO NOT EDIT!!! ---------------------------------
+#-----------------------------------------------------------------------
+
+# Collect all sample objects
+import sys
+self = sys.modules[__name__]
+samples = []
+for v in self.__dict__.values():
+    if isinstance(v, Sample): samples.append(v)
